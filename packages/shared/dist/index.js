@@ -33,6 +33,7 @@ __export(index_exports, {
   CustomerHistoryVerifyOtpSchema: () => CustomerHistoryVerifyOtpSchema,
   CustomerOrderHistoryItemSchema: () => CustomerOrderHistoryItemSchema,
   CustomerSchema: () => CustomerSchema,
+  DEFAULT_SYSTEM_ROLES: () => DEFAULT_SYSTEM_ROLES,
   DEPARTAMENTOS: () => DEPARTAMENTOS,
   EVENT_TYPES: () => EVENT_TYPES,
   EventsBatchSchema: () => EventsBatchSchema,
@@ -45,6 +46,7 @@ __export(index_exports, {
   OrderCreatedSchema: () => OrderCreatedSchema,
   OrderUpdateSchema: () => OrderUpdateSchema,
   PAYMENT_METHODS: () => PAYMENT_METHODS,
+  PLATFORM_PERMISSIONS: () => PLATFORM_PERMISSIONS,
   PairingItemSchema: () => PairingItemSchema,
   ProcessStepSchema: () => ProcessStepSchema,
   ProductSchema: () => ProductSchema,
@@ -52,6 +54,9 @@ __export(index_exports, {
   PublicOrderSchema: () => PublicOrderSchema,
   QuoteRequestSchema: () => QuoteRequestSchema,
   QuoteSchema: () => QuoteSchema,
+  RoleCreateSchema: () => RoleCreateSchema,
+  RoleDefinitionSchema: () => RoleDefinitionSchema,
+  RoleUpdateSchema: () => RoleUpdateSchema,
   SETTING_KEYS: () => SETTING_KEYS,
   STATUS_LABEL: () => STATUS_LABEL,
   SettingsSchema: () => SettingsSchema,
@@ -66,6 +71,7 @@ __export(index_exports, {
   ZoneUpsertSchema: () => ZoneUpsertSchema,
   cop: () => cop,
   departmentOf: () => departmentOf,
+  hasPermission: () => hasPermission,
   searchCities: () => searchCities,
   suggestByRules: () => suggestByRules
 });
@@ -240,13 +246,195 @@ var StockAdjustSchema = import_zod.z.object({
   note: import_zod.z.string().trim().min(3, "Explica el motivo del ajuste").max(300)
 });
 var ADMIN_ROLES = ["owner", "admin", "ops", "viewer"];
+var PLATFORM_PERMISSIONS = [
+  // 1. Tablero y Analítica
+  { id: "dashboard.view", module: "Tablero", label: "Ver m\xE9tricas y ventas", desc: "Acceso al tablero principal con indicadores y gr\xE1ficos" },
+  { id: "dashboard.export", module: "Tablero", label: "Exportar reportes", desc: "Descargar datos anal\xEDticos y embudo de conversi\xF3n" },
+  // 2. Pedidos y Ventas
+  { id: "orders.view", module: "Pedidos", label: "Ver pedidos", desc: "Consultar listado, filtros y detalle de \xF3rdenes" },
+  { id: "orders.edit_status", module: "Pedidos", label: "Cambiar estados", desc: "Marcar pedidos como pagados, en preparaci\xF3n o cancelados" },
+  { id: "orders.dispatch", module: "Pedidos", label: "Despachar y gu\xEDas", desc: "Asignar n\xFAmero de gu\xEDa, transportadora y fecha estimada" },
+  { id: "orders.notes", module: "Pedidos", label: "Notas internas", desc: "Agregar notas privadas y observaciones a los pedidos" },
+  { id: "orders.export", module: "Pedidos", label: "Exportar pedidos CSV", desc: "Descargar listado de pedidos en formato CSV/Excel" },
+  // 3. Clientes y Suscriptores
+  { id: "customers.view", module: "Clientes", label: "Ver clientes", desc: "Consultar historial de compras y datos de compradores" },
+  { id: "customers.export", module: "Clientes", label: "Exportar clientes CSV", desc: "Descargar base de datos de compradores" },
+  { id: "customers.subscribers", module: "Clientes", label: "Gestionar bolet\xEDn", desc: "Administrar suscriptores y autorizaciones Habeas Data" },
+  // 4. Catálogo y Productos
+  { id: "products.view", module: "Cat\xE1logo", label: "Ver productos", desc: "Consultar fichas t\xE9cnicas, precios e inventario" },
+  { id: "products.create", module: "Cat\xE1logo", label: "Crear productos", desc: "Publicar nuevos sabores, variantes y recetas" },
+  { id: "products.edit", module: "Cat\xE1logo", label: "Editar productos", desc: "Modificar precios, fotos, descripciones y destacados" },
+  { id: "products.delete", module: "Cat\xE1logo", label: "Desactivar productos", desc: "Ocultar o descontinuar productos de la tienda" },
+  // 5. Inventario y Lotes
+  { id: "inventory.view", module: "Inventario", label: "Ver existencias", desc: "Consultar niveles de stock y alertas de reposici\xF3n" },
+  { id: "inventory.batches", module: "Inventario", label: "Registrar lotes", desc: "Ingresar nuevos lotes de producci\xF3n y vencimientos" },
+  { id: "inventory.adjust", module: "Inventario", label: "Ajustes de stock", desc: "Registrar mermas, degustaciones o correcciones" },
+  { id: "inventory.movements", module: "Inventario", label: "Kardex y movimientos", desc: "Auditar historial de entradas y salidas de frascos" },
+  // 6. Cupones y Promociones
+  { id: "coupons.view", module: "Cupones", label: "Ver cupones", desc: "Consultar c\xF3digos de descuento activos e historial" },
+  { id: "coupons.manage", module: "Cupones", label: "Gestionar cupones", desc: "Crear, editar porcentajes, fechas y desactivar cupones" },
+  // 7. Envíos y Tarifas
+  { id: "shipping.view", module: "Env\xEDos", label: "Ver zonas de entrega", desc: "Consultar tarifas y departamentos habilitados" },
+  { id: "shipping.manage", module: "Env\xEDos", label: "Modificar tarifas", desc: "Ajustar costos de flete, tiempos y contraentrega" },
+  // 8. Mensajes y PQRS
+  { id: "messages.view", module: "Mensajes", label: "Bandeja de entrada", desc: "Leer consultas y mensajes enviados por clientes" },
+  { id: "messages.reply", module: "Mensajes", label: "Responder mensajes", desc: "Contestar v\xEDa correo/WhatsApp y cambiar estado" },
+  { id: "messages.notes", module: "Mensajes", label: "Notas internas", desc: "Agregar notas privadas de seguimiento" },
+  { id: "messages.delete", module: "Mensajes", label: "Eliminar mensajes", desc: "Depurar mensajes o descartar spam" },
+  // 9. Contenido de Tienda (CMS)
+  { id: "content.view", module: "Contenido", label: "Ver contenido", desc: "Consultar textos, banners y preguntas frecuentes" },
+  { id: "content.manage", module: "Contenido", label: "Editar contenido", desc: "Modificar portada, lemas, historia, FAQ y maridajes" },
+  // 10. Ajustes del Negocio
+  { id: "settings.view", module: "Ajustes", label: "Ver configuraci\xF3n", desc: "Consultar par\xE1metros generales de la tienda" },
+  { id: "settings.manage", module: "Ajustes", label: "Modificar ajustes", desc: "Editar WhatsApp, flete gratis, pasarela Wompi y correos" },
+  // 11. Equipo y Seguridad
+  { id: "users.view", module: "Seguridad", label: "Ver equipo", desc: "Consultar lista de colaboradores y accesos" },
+  { id: "users.manage", module: "Seguridad", label: "Gestionar usuarios", desc: "Invitar personas, restablecer claves o suspender" },
+  { id: "roles.manage", module: "Seguridad", label: "Gestionar roles", desc: "Crear roles personalizados y editar matrices de permisos" },
+  { id: "audit.view", module: "Seguridad", label: "Ver bit\xE1cora", desc: "Consultar registro forense de todas las acciones" }
+];
+var RoleDefinitionSchema = import_zod.z.object({
+  id: import_zod.z.string().trim().min(2).max(60).regex(/^[a-z0-9_-]+$/, "El identificador debe ser en min\xFAsculas sin espacios"),
+  name: import_zod.z.string().trim().min(2).max(80),
+  desc: import_zod.z.string().trim().max(300).default(""),
+  badge: import_zod.z.string().trim().max(50).default("Personalizado"),
+  tone: import_zod.z.enum(["violet", "blue", "green", "amber", "red", "gray"]).default("blue"),
+  icon: import_zod.z.enum(["shield", "key", "box", "eye", "truck", "users", "sliders", "star", "tag", "inbox"]).default("shield"),
+  isSystem: import_zod.z.boolean().default(false),
+  permissions: import_zod.z.array(import_zod.z.string()),
+  recommendation: import_zod.z.string().trim().max(300).optional().default("")
+});
+var RoleCreateSchema = RoleDefinitionSchema.omit({ isSystem: true });
+var RoleUpdateSchema = RoleCreateSchema.partial().extend({
+  permissions: import_zod.z.array(import_zod.z.string()).optional()
+});
+var DEFAULT_SYSTEM_ROLES = [
+  {
+    id: "owner",
+    name: "Propietario",
+    desc: "Control total de la marca, el negocio y el equipo.",
+    badge: "M\xE1ximo nivel",
+    tone: "violet",
+    icon: "key",
+    isSystem: true,
+    permissions: ["*"],
+    recommendation: "Reservado para los fundadores y propietarios legales."
+  },
+  {
+    id: "admin",
+    name: "Administrador",
+    desc: "Gesti\xF3n integral del cat\xE1logo, precios, inventario y configuraci\xF3n.",
+    badge: "Gesti\xF3n general",
+    tone: "blue",
+    icon: "shield",
+    isSystem: true,
+    permissions: [
+      "dashboard.view",
+      "dashboard.export",
+      "orders.view",
+      "orders.edit_status",
+      "orders.dispatch",
+      "orders.notes",
+      "orders.export",
+      "customers.view",
+      "customers.export",
+      "customers.subscribers",
+      "products.view",
+      "products.create",
+      "products.edit",
+      "products.delete",
+      "inventory.view",
+      "inventory.batches",
+      "inventory.adjust",
+      "inventory.movements",
+      "coupons.view",
+      "coupons.manage",
+      "shipping.view",
+      "shipping.manage",
+      "messages.view",
+      "messages.reply",
+      "messages.notes",
+      "messages.delete",
+      "content.view",
+      "content.manage",
+      "settings.view",
+      "settings.manage",
+      "users.view",
+      "audit.view"
+    ],
+    recommendation: "Para administradores generales y directores comerciales."
+  },
+  {
+    id: "ops",
+    name: "Operaciones",
+    desc: "Operaci\xF3n diaria de empaque, despacho, bodega y atenci\xF3n.",
+    badge: "Log\xEDstica diaria",
+    tone: "green",
+    icon: "box",
+    isSystem: true,
+    permissions: [
+      "dashboard.view",
+      "orders.view",
+      "orders.edit_status",
+      "orders.dispatch",
+      "orders.notes",
+      "customers.view",
+      "products.view",
+      "inventory.view",
+      "inventory.batches",
+      "inventory.adjust",
+      "inventory.movements",
+      "shipping.view",
+      "messages.view",
+      "messages.reply",
+      "messages.notes"
+    ],
+    recommendation: "Para personal de taller, bodega y servicio al cliente."
+  },
+  {
+    id: "viewer",
+    name: "Solo lectura",
+    desc: "Acceso de solo lectura para reportes, estad\xEDsticas y supervisi\xF3n.",
+    badge: "Consulta",
+    tone: "gray",
+    icon: "eye",
+    isSystem: true,
+    permissions: [
+      "dashboard.view",
+      "dashboard.export",
+      "orders.view",
+      "orders.export",
+      "customers.view",
+      "customers.export",
+      "products.view",
+      "inventory.view",
+      "coupons.view",
+      "shipping.view",
+      "messages.view",
+      "content.view",
+      "settings.view",
+      "audit.view"
+    ],
+    recommendation: "Para contadores, asesores externos o auditores."
+  }
+];
+function hasPermission(role, perm) {
+  if (!role) return false;
+  if (role.id === "owner" || role.permissions.includes("*")) return true;
+  return role.permissions.includes(perm);
+}
 var AdminUserCreateSchema = import_zod.z.object({
   email: import_zod.z.string().trim().email().max(160),
   name: import_zod.z.string().trim().min(2).max(120),
   password: import_zod.z.string().min(8, "M\xEDnimo 8 caracteres"),
-  role: import_zod.z.enum(ADMIN_ROLES).default("ops")
+  role: import_zod.z.string().trim().min(2).max(60).default("ops")
 });
-var AdminUserUpdateSchema = import_zod.z.object({ name: import_zod.z.string().trim().min(2).max(120).optional(), role: import_zod.z.enum(ADMIN_ROLES).optional(), active: import_zod.z.boolean().optional(), password: import_zod.z.string().min(8).optional() });
+var AdminUserUpdateSchema = import_zod.z.object({
+  name: import_zod.z.string().trim().min(2).max(120).optional(),
+  role: import_zod.z.string().trim().min(2).max(60).optional(),
+  active: import_zod.z.boolean().optional(),
+  password: import_zod.z.string().min(8).optional()
+});
 var OrderAdminUpdateSchema = OrderUpdateSchema.extend({ adminNotes: import_zod.z.string().max(2e3).optional() });
 var TestimonialSchema = import_zod.z.object({
   name: import_zod.z.string().max(80),
@@ -656,6 +844,7 @@ function suggestByRules(text) {
   CustomerHistoryVerifyOtpSchema,
   CustomerOrderHistoryItemSchema,
   CustomerSchema,
+  DEFAULT_SYSTEM_ROLES,
   DEPARTAMENTOS,
   EVENT_TYPES,
   EventsBatchSchema,
@@ -668,6 +857,7 @@ function suggestByRules(text) {
   OrderCreatedSchema,
   OrderUpdateSchema,
   PAYMENT_METHODS,
+  PLATFORM_PERMISSIONS,
   PairingItemSchema,
   ProcessStepSchema,
   ProductSchema,
@@ -675,6 +865,9 @@ function suggestByRules(text) {
   PublicOrderSchema,
   QuoteRequestSchema,
   QuoteSchema,
+  RoleCreateSchema,
+  RoleDefinitionSchema,
+  RoleUpdateSchema,
   SETTING_KEYS,
   STATUS_LABEL,
   SettingsSchema,
@@ -689,6 +882,7 @@ function suggestByRules(text) {
   ZoneUpsertSchema,
   cop,
   departmentOf,
+  hasPermission,
   searchCities,
   suggestByRules
 });

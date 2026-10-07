@@ -718,38 +718,137 @@ declare const StockAdjustSchema: z.ZodObject<{
     delta: number;
 }>;
 declare const ADMIN_ROLES: readonly ["owner", "admin", "ops", "viewer"];
-type AdminRole = (typeof ADMIN_ROLES)[number];
+type AdminRole = (typeof ADMIN_ROLES)[number] | string;
+type PlatformPermission = {
+    id: string;
+    module: string;
+    label: string;
+    desc: string;
+};
+declare const PLATFORM_PERMISSIONS: PlatformPermission[];
+declare const RoleDefinitionSchema: z.ZodObject<{
+    id: z.ZodString;
+    name: z.ZodString;
+    desc: z.ZodDefault<z.ZodString>;
+    badge: z.ZodDefault<z.ZodString>;
+    tone: z.ZodDefault<z.ZodEnum<["violet", "blue", "green", "amber", "red", "gray"]>>;
+    icon: z.ZodDefault<z.ZodEnum<["shield", "key", "box", "eye", "truck", "users", "sliders", "star", "tag", "inbox"]>>;
+    isSystem: z.ZodDefault<z.ZodBoolean>;
+    permissions: z.ZodArray<z.ZodString, "many">;
+    recommendation: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+}, "strip", z.ZodTypeAny, {
+    id: string;
+    name: string;
+    desc: string;
+    badge: string;
+    tone: "violet" | "blue" | "green" | "amber" | "red" | "gray";
+    icon: "shield" | "key" | "box" | "eye" | "truck" | "users" | "sliders" | "star" | "tag" | "inbox";
+    isSystem: boolean;
+    permissions: string[];
+    recommendation: string;
+}, {
+    id: string;
+    name: string;
+    permissions: string[];
+    desc?: string | undefined;
+    badge?: string | undefined;
+    tone?: "violet" | "blue" | "green" | "amber" | "red" | "gray" | undefined;
+    icon?: "shield" | "key" | "box" | "eye" | "truck" | "users" | "sliders" | "star" | "tag" | "inbox" | undefined;
+    isSystem?: boolean | undefined;
+    recommendation?: string | undefined;
+}>;
+type RoleDefinition = z.infer<typeof RoleDefinitionSchema>;
+declare const RoleCreateSchema: z.ZodObject<Omit<{
+    id: z.ZodString;
+    name: z.ZodString;
+    desc: z.ZodDefault<z.ZodString>;
+    badge: z.ZodDefault<z.ZodString>;
+    tone: z.ZodDefault<z.ZodEnum<["violet", "blue", "green", "amber", "red", "gray"]>>;
+    icon: z.ZodDefault<z.ZodEnum<["shield", "key", "box", "eye", "truck", "users", "sliders", "star", "tag", "inbox"]>>;
+    isSystem: z.ZodDefault<z.ZodBoolean>;
+    permissions: z.ZodArray<z.ZodString, "many">;
+    recommendation: z.ZodDefault<z.ZodOptional<z.ZodString>>;
+}, "isSystem">, "strip", z.ZodTypeAny, {
+    id: string;
+    name: string;
+    desc: string;
+    badge: string;
+    tone: "violet" | "blue" | "green" | "amber" | "red" | "gray";
+    icon: "shield" | "key" | "box" | "eye" | "truck" | "users" | "sliders" | "star" | "tag" | "inbox";
+    permissions: string[];
+    recommendation: string;
+}, {
+    id: string;
+    name: string;
+    permissions: string[];
+    desc?: string | undefined;
+    badge?: string | undefined;
+    tone?: "violet" | "blue" | "green" | "amber" | "red" | "gray" | undefined;
+    icon?: "shield" | "key" | "box" | "eye" | "truck" | "users" | "sliders" | "star" | "tag" | "inbox" | undefined;
+    recommendation?: string | undefined;
+}>;
+declare const RoleUpdateSchema: z.ZodObject<{
+    id: z.ZodOptional<z.ZodString>;
+    name: z.ZodOptional<z.ZodString>;
+    desc: z.ZodOptional<z.ZodDefault<z.ZodString>>;
+    badge: z.ZodOptional<z.ZodDefault<z.ZodString>>;
+    tone: z.ZodOptional<z.ZodDefault<z.ZodEnum<["violet", "blue", "green", "amber", "red", "gray"]>>>;
+    icon: z.ZodOptional<z.ZodDefault<z.ZodEnum<["shield", "key", "box", "eye", "truck", "users", "sliders", "star", "tag", "inbox"]>>>;
+    recommendation: z.ZodOptional<z.ZodDefault<z.ZodOptional<z.ZodString>>>;
+} & {
+    permissions: z.ZodOptional<z.ZodArray<z.ZodString, "many">>;
+}, "strip", z.ZodTypeAny, {
+    id?: string | undefined;
+    name?: string | undefined;
+    desc?: string | undefined;
+    badge?: string | undefined;
+    tone?: "violet" | "blue" | "green" | "amber" | "red" | "gray" | undefined;
+    icon?: "shield" | "key" | "box" | "eye" | "truck" | "users" | "sliders" | "star" | "tag" | "inbox" | undefined;
+    permissions?: string[] | undefined;
+    recommendation?: string | undefined;
+}, {
+    id?: string | undefined;
+    name?: string | undefined;
+    desc?: string | undefined;
+    badge?: string | undefined;
+    tone?: "violet" | "blue" | "green" | "amber" | "red" | "gray" | undefined;
+    icon?: "shield" | "key" | "box" | "eye" | "truck" | "users" | "sliders" | "star" | "tag" | "inbox" | undefined;
+    permissions?: string[] | undefined;
+    recommendation?: string | undefined;
+}>;
+declare const DEFAULT_SYSTEM_ROLES: RoleDefinition[];
+declare function hasPermission(role: RoleDefinition | null | undefined, perm: string): boolean;
 declare const AdminUserCreateSchema: z.ZodObject<{
     email: z.ZodString;
     name: z.ZodString;
     password: z.ZodString;
-    role: z.ZodDefault<z.ZodEnum<["owner", "admin", "ops", "viewer"]>>;
+    role: z.ZodDefault<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
     name: string;
     email: string;
     password: string;
-    role: "owner" | "admin" | "ops" | "viewer";
+    role: string;
 }, {
     name: string;
     email: string;
     password: string;
-    role?: "owner" | "admin" | "ops" | "viewer" | undefined;
+    role?: string | undefined;
 }>;
 declare const AdminUserUpdateSchema: z.ZodObject<{
     name: z.ZodOptional<z.ZodString>;
-    role: z.ZodOptional<z.ZodEnum<["owner", "admin", "ops", "viewer"]>>;
+    role: z.ZodOptional<z.ZodString>;
     active: z.ZodOptional<z.ZodBoolean>;
     password: z.ZodOptional<z.ZodString>;
 }, "strip", z.ZodTypeAny, {
     name?: string | undefined;
     password?: string | undefined;
     active?: boolean | undefined;
-    role?: "owner" | "admin" | "ops" | "viewer" | undefined;
+    role?: string | undefined;
 }, {
     name?: string | undefined;
     password?: string | undefined;
     active?: boolean | undefined;
-    role?: "owner" | "admin" | "ops" | "viewer" | undefined;
+    role?: string | undefined;
 }>;
 declare const OrderAdminUpdateSchema: z.ZodObject<{
     status: z.ZodOptional<z.ZodEnum<["pending", "paid", "preparing", "shipped", "delivered", "cancelled", "failed", "refunded"]>>;
@@ -796,13 +895,13 @@ declare const TrustPillarSchema: z.ZodObject<{
     desc: z.ZodString;
     icon: z.ZodDefault<z.ZodEnum<["leaf", "truck", "lock"]>>;
 }, "strip", z.ZodTypeAny, {
-    title: string;
     desc: string;
-    icon: "leaf" | "truck" | "lock";
+    icon: "truck" | "leaf" | "lock";
+    title: string;
 }, {
-    title: string;
     desc: string;
-    icon?: "leaf" | "truck" | "lock" | undefined;
+    title: string;
+    icon?: "truck" | "leaf" | "lock" | undefined;
 }>;
 type TrustPillar = z.infer<typeof TrustPillarSchema>;
 declare const ProcessStepSchema: z.ZodObject<{
@@ -812,17 +911,17 @@ declare const ProcessStepSchema: z.ZodObject<{
     desc: z.ZodString;
     badge: z.ZodString;
 }, "strip", z.ZodTypeAny, {
-    title: string;
     desc: string;
+    badge: string;
+    title: string;
     num: string;
     subtitle: string;
-    badge: string;
 }, {
-    title: string;
     desc: string;
+    badge: string;
+    title: string;
     num: string;
     subtitle: string;
-    badge: string;
 }>;
 type ProcessStep = z.infer<typeof ProcessStepSchema>;
 declare const PairingItemSchema: z.ZodObject<{
@@ -840,9 +939,9 @@ declare const PairingItemSchema: z.ZodObject<{
     image: string;
     tip: string;
     active: boolean;
-    title: string;
-    icon: string;
     badge: string;
+    icon: string;
+    title: string;
     dish: string;
     productSlug: string;
 }, {
@@ -850,9 +949,9 @@ declare const PairingItemSchema: z.ZodObject<{
     image?: string | undefined;
     tip?: string | undefined;
     active?: boolean | undefined;
-    title?: string | undefined;
-    icon?: string | undefined;
     badge?: string | undefined;
+    icon?: string | undefined;
+    title?: string | undefined;
     dish?: string | undefined;
     productSlug?: string | undefined;
 }>;
@@ -866,15 +965,15 @@ declare const FooterPillarSchema: z.ZodObject<{
 }, "strip", z.ZodTypeAny, {
     id: string;
     active: boolean;
-    title: string;
     desc: string;
     icon: string;
+    title: string;
 }, {
     id?: string | undefined;
     active?: boolean | undefined;
-    title?: string | undefined;
     desc?: string | undefined;
     icon?: string | undefined;
+    title?: string | undefined;
 }>;
 type FooterPillar = z.infer<typeof FooterPillarSchema>;
 /** Contenido editable de la tienda. */
@@ -893,13 +992,13 @@ declare const SiteContentSchema: z.ZodObject<{
         desc: z.ZodString;
         icon: z.ZodDefault<z.ZodEnum<["leaf", "truck", "lock"]>>;
     }, "strip", z.ZodTypeAny, {
-        title: string;
         desc: string;
-        icon: "leaf" | "truck" | "lock";
+        icon: "truck" | "leaf" | "lock";
+        title: string;
     }, {
-        title: string;
         desc: string;
-        icon?: "leaf" | "truck" | "lock" | undefined;
+        title: string;
+        icon?: "truck" | "leaf" | "lock" | undefined;
     }>, "many">>;
     manifestoKicker: z.ZodDefault<z.ZodString>;
     aboutTitle: z.ZodDefault<z.ZodString>;
@@ -936,9 +1035,9 @@ declare const SiteContentSchema: z.ZodObject<{
         image: string;
         tip: string;
         active: boolean;
-        title: string;
-        icon: string;
         badge: string;
+        icon: string;
+        title: string;
         dish: string;
         productSlug: string;
     }, {
@@ -946,9 +1045,9 @@ declare const SiteContentSchema: z.ZodObject<{
         image?: string | undefined;
         tip?: string | undefined;
         active?: boolean | undefined;
-        title?: string | undefined;
-        icon?: string | undefined;
         badge?: string | undefined;
+        icon?: string | undefined;
+        title?: string | undefined;
         dish?: string | undefined;
         productSlug?: string | undefined;
     }>, "many">>;
@@ -962,17 +1061,17 @@ declare const SiteContentSchema: z.ZodObject<{
         desc: z.ZodString;
         badge: z.ZodString;
     }, "strip", z.ZodTypeAny, {
-        title: string;
         desc: string;
+        badge: string;
+        title: string;
         num: string;
         subtitle: string;
-        badge: string;
     }, {
-        title: string;
         desc: string;
+        badge: string;
+        title: string;
         num: string;
         subtitle: string;
-        badge: string;
     }>, "many">>;
     slowKicker: z.ZodDefault<z.ZodString>;
     slowTitle: z.ZodDefault<z.ZodString>;
@@ -1032,15 +1131,15 @@ declare const SiteContentSchema: z.ZodObject<{
     }, "strip", z.ZodTypeAny, {
         id: string;
         active: boolean;
-        title: string;
         desc: string;
         icon: string;
+        title: string;
     }, {
         id?: string | undefined;
         active?: boolean | undefined;
-        title?: string | undefined;
         desc?: string | undefined;
         icon?: string | undefined;
+        title?: string | undefined;
     }>, "many">>;
     footerManifesto: z.ZodDefault<z.ZodString>;
     footerOriginBadge: z.ZodDefault<z.ZodString>;
@@ -1076,13 +1175,13 @@ declare const SiteContentSchema: z.ZodObject<{
         desc: z.ZodString;
         icon: z.ZodDefault<z.ZodEnum<["leaf", "truck", "lock"]>>;
     }, "strip", z.ZodTypeAny, {
-        title: string;
         desc: string;
-        icon: "leaf" | "truck" | "lock";
+        icon: "truck" | "leaf" | "lock";
+        title: string;
     }, {
-        title: string;
         desc: string;
-        icon?: "leaf" | "truck" | "lock" | undefined;
+        title: string;
+        icon?: "truck" | "leaf" | "lock" | undefined;
     }>, "many">>;
     manifestoKicker: z.ZodDefault<z.ZodString>;
     aboutTitle: z.ZodDefault<z.ZodString>;
@@ -1119,9 +1218,9 @@ declare const SiteContentSchema: z.ZodObject<{
         image: string;
         tip: string;
         active: boolean;
-        title: string;
-        icon: string;
         badge: string;
+        icon: string;
+        title: string;
         dish: string;
         productSlug: string;
     }, {
@@ -1129,9 +1228,9 @@ declare const SiteContentSchema: z.ZodObject<{
         image?: string | undefined;
         tip?: string | undefined;
         active?: boolean | undefined;
-        title?: string | undefined;
-        icon?: string | undefined;
         badge?: string | undefined;
+        icon?: string | undefined;
+        title?: string | undefined;
         dish?: string | undefined;
         productSlug?: string | undefined;
     }>, "many">>;
@@ -1145,17 +1244,17 @@ declare const SiteContentSchema: z.ZodObject<{
         desc: z.ZodString;
         badge: z.ZodString;
     }, "strip", z.ZodTypeAny, {
-        title: string;
         desc: string;
+        badge: string;
+        title: string;
         num: string;
         subtitle: string;
-        badge: string;
     }, {
-        title: string;
         desc: string;
+        badge: string;
+        title: string;
         num: string;
         subtitle: string;
-        badge: string;
     }>, "many">>;
     slowKicker: z.ZodDefault<z.ZodString>;
     slowTitle: z.ZodDefault<z.ZodString>;
@@ -1215,15 +1314,15 @@ declare const SiteContentSchema: z.ZodObject<{
     }, "strip", z.ZodTypeAny, {
         id: string;
         active: boolean;
-        title: string;
         desc: string;
         icon: string;
+        title: string;
     }, {
         id?: string | undefined;
         active?: boolean | undefined;
-        title?: string | undefined;
         desc?: string | undefined;
         icon?: string | undefined;
+        title?: string | undefined;
     }>, "many">>;
     footerManifesto: z.ZodDefault<z.ZodString>;
     footerOriginBadge: z.ZodDefault<z.ZodString>;
@@ -1259,13 +1358,13 @@ declare const SiteContentSchema: z.ZodObject<{
         desc: z.ZodString;
         icon: z.ZodDefault<z.ZodEnum<["leaf", "truck", "lock"]>>;
     }, "strip", z.ZodTypeAny, {
-        title: string;
         desc: string;
-        icon: "leaf" | "truck" | "lock";
+        icon: "truck" | "leaf" | "lock";
+        title: string;
     }, {
-        title: string;
         desc: string;
-        icon?: "leaf" | "truck" | "lock" | undefined;
+        title: string;
+        icon?: "truck" | "leaf" | "lock" | undefined;
     }>, "many">>;
     manifestoKicker: z.ZodDefault<z.ZodString>;
     aboutTitle: z.ZodDefault<z.ZodString>;
@@ -1302,9 +1401,9 @@ declare const SiteContentSchema: z.ZodObject<{
         image: string;
         tip: string;
         active: boolean;
-        title: string;
-        icon: string;
         badge: string;
+        icon: string;
+        title: string;
         dish: string;
         productSlug: string;
     }, {
@@ -1312,9 +1411,9 @@ declare const SiteContentSchema: z.ZodObject<{
         image?: string | undefined;
         tip?: string | undefined;
         active?: boolean | undefined;
-        title?: string | undefined;
-        icon?: string | undefined;
         badge?: string | undefined;
+        icon?: string | undefined;
+        title?: string | undefined;
         dish?: string | undefined;
         productSlug?: string | undefined;
     }>, "many">>;
@@ -1328,17 +1427,17 @@ declare const SiteContentSchema: z.ZodObject<{
         desc: z.ZodString;
         badge: z.ZodString;
     }, "strip", z.ZodTypeAny, {
-        title: string;
         desc: string;
+        badge: string;
+        title: string;
         num: string;
         subtitle: string;
-        badge: string;
     }, {
-        title: string;
         desc: string;
+        badge: string;
+        title: string;
         num: string;
         subtitle: string;
-        badge: string;
     }>, "many">>;
     slowKicker: z.ZodDefault<z.ZodString>;
     slowTitle: z.ZodDefault<z.ZodString>;
@@ -1398,15 +1497,15 @@ declare const SiteContentSchema: z.ZodObject<{
     }, "strip", z.ZodTypeAny, {
         id: string;
         active: boolean;
-        title: string;
         desc: string;
         icon: string;
+        title: string;
     }, {
         id?: string | undefined;
         active?: boolean | undefined;
-        title?: string | undefined;
         desc?: string | undefined;
         icon?: string | undefined;
+        title?: string | undefined;
     }>, "many">>;
     footerManifesto: z.ZodDefault<z.ZodString>;
     footerOriginBadge: z.ZodDefault<z.ZodString>;
@@ -1562,4 +1661,4 @@ type PaymentMethod = (typeof PAYMENT_METHODS)[number];
 declare const STATUS_LABEL: Record<OrderStatus, string>;
 declare const METHOD_LABEL: Record<PaymentMethod, string>;
 
-export { ADMIN_ROLES, type AdminRole, AdminUserCreateSchema, AdminUserUpdateSchema, BatchCreateSchema, CITIES, type ContactInput, ContactSchema, type CouponUpsert, CouponUpsertSchema, type CreateOrderInput, CreateOrderSchema, type CreateOrderWithCoupon, CreateOrderWithCouponSchema, type CustomerHistoryRequestOtp, CustomerHistoryRequestOtpSchema, type CustomerHistoryVerifyOtp, CustomerHistoryVerifyOtpSchema, type CustomerOrderHistoryItem, CustomerOrderHistoryItemSchema, CustomerSchema, DEPARTAMENTOS, EVENT_TYPES, EventsBatchSchema, type FooterPillar, FooterPillarSchema, LoginSchema, MESSAGE_STATUSES, METHOD_LABEL, ORDER_STATUSES, OrderAdminUpdateSchema, type OrderCreated, OrderCreatedSchema, type OrderStatus, OrderUpdateSchema, PAYMENT_METHODS, type PairingItem, PairingItemSchema, type PaymentMethod, type ProcessStep, ProcessStepSchema, type Product, ProductSchema, type ProductUpsert, ProductUpsertSchema, type PublicOrder, PublicOrderSchema, type Quote, type QuoteRequest, QuoteRequestSchema, QuoteSchema, SETTING_KEYS, STATUS_LABEL, type SettingKey, SettingsSchema, type SiteContent, SiteContentSchema, StockAdjustSchema, type StoreInfo, StoreInfoSchema, SubscribeSchema, SuggestSchema, type Suggestion, SuggestionSchema, type Testimonial, TestimonialSchema, type TrustPillar, TrustPillarSchema, ZoneUpsertSchema, cop, departmentOf, searchCities, suggestByRules };
+export { ADMIN_ROLES, type AdminRole, AdminUserCreateSchema, AdminUserUpdateSchema, BatchCreateSchema, CITIES, type ContactInput, ContactSchema, type CouponUpsert, CouponUpsertSchema, type CreateOrderInput, CreateOrderSchema, type CreateOrderWithCoupon, CreateOrderWithCouponSchema, type CustomerHistoryRequestOtp, CustomerHistoryRequestOtpSchema, type CustomerHistoryVerifyOtp, CustomerHistoryVerifyOtpSchema, type CustomerOrderHistoryItem, CustomerOrderHistoryItemSchema, CustomerSchema, DEFAULT_SYSTEM_ROLES, DEPARTAMENTOS, EVENT_TYPES, EventsBatchSchema, type FooterPillar, FooterPillarSchema, LoginSchema, MESSAGE_STATUSES, METHOD_LABEL, ORDER_STATUSES, OrderAdminUpdateSchema, type OrderCreated, OrderCreatedSchema, type OrderStatus, OrderUpdateSchema, PAYMENT_METHODS, PLATFORM_PERMISSIONS, type PairingItem, PairingItemSchema, type PaymentMethod, type PlatformPermission, type ProcessStep, ProcessStepSchema, type Product, ProductSchema, type ProductUpsert, ProductUpsertSchema, type PublicOrder, PublicOrderSchema, type Quote, type QuoteRequest, QuoteRequestSchema, QuoteSchema, RoleCreateSchema, type RoleDefinition, RoleDefinitionSchema, RoleUpdateSchema, SETTING_KEYS, STATUS_LABEL, type SettingKey, SettingsSchema, type SiteContent, SiteContentSchema, StockAdjustSchema, type StoreInfo, StoreInfoSchema, SubscribeSchema, SuggestSchema, type Suggestion, SuggestionSchema, type Testimonial, TestimonialSchema, type TrustPillar, TrustPillarSchema, ZoneUpsertSchema, cop, departmentOf, hasPermission, searchCities, suggestByRules };
