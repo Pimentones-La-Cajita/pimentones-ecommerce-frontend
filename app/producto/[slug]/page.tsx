@@ -128,7 +128,7 @@ export default async function ProductPage({ params }: Props) {
 
             <details>
               <summary>Conservación y vida útil<Chevron /></summary>
-              <p>{c.conservation}</p>
+              <p>{p.conservation || c.conservation || 'Cerrado, en un lugar fresco y sin sol. Una vez abierto, en la nevera: no lleva conservantes.'}</p>
             </details>
           </div>
         </div>
