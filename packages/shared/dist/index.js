@@ -29,6 +29,9 @@ __export(index_exports, {
   CouponUpsertSchema: () => CouponUpsertSchema,
   CreateOrderSchema: () => CreateOrderSchema,
   CreateOrderWithCouponSchema: () => CreateOrderWithCouponSchema,
+  CustomerHistoryRequestOtpSchema: () => CustomerHistoryRequestOtpSchema,
+  CustomerHistoryVerifyOtpSchema: () => CustomerHistoryVerifyOtpSchema,
+  CustomerOrderHistoryItemSchema: () => CustomerOrderHistoryItemSchema,
   CustomerSchema: () => CustomerSchema,
   DEPARTAMENTOS: () => DEPARTAMENTOS,
   EVENT_TYPES: () => EVENT_TYPES,
@@ -516,6 +519,34 @@ var ContactSchema = import_zod.z.object({
   // campo trampa para bots: si trae algo, se ignora en silencio
 });
 var MESSAGE_STATUSES = ["new", "read", "answered"];
+var CustomerHistoryRequestOtpSchema = import_zod.z.object({
+  email: import_zod.z.string().trim().email("Escribe un correo electr\xF3nico v\xE1lido.").max(160)
+});
+var CustomerHistoryVerifyOtpSchema = import_zod.z.object({
+  email: import_zod.z.string().trim().email("Escribe un correo electr\xF3nico v\xE1lido.").max(160),
+  code: import_zod.z.string().trim().length(6, "El c\xF3digo debe tener 6 d\xEDgitos.")
+});
+var CustomerOrderHistoryItemSchema = import_zod.z.object({
+  reference: import_zod.z.string(),
+  status: import_zod.z.enum(ORDER_STATUSES),
+  paymentMethod: import_zod.z.enum(PAYMENT_METHODS),
+  subtotal: import_zod.z.number(),
+  shipping: import_zod.z.number(),
+  discount: import_zod.z.number().default(0),
+  total: import_zod.z.number(),
+  tracking: import_zod.z.string().nullable(),
+  carrier: import_zod.z.string().nullable().optional(),
+  city: import_zod.z.string(),
+  department: import_zod.z.string().nullable().optional(),
+  eta: import_zod.z.string().nullable().default(null),
+  createdAt: import_zod.z.string(),
+  items: import_zod.z.array(import_zod.z.object({
+    name: import_zod.z.string(),
+    unitPrice: import_zod.z.number(),
+    quantity: import_zod.z.number(),
+    productId: import_zod.z.number().nullable().optional()
+  }))
+});
 
 // src/money.ts
 var cop = (n) => "$" + Number(n || 0).toLocaleString("es-CO");
@@ -621,6 +652,9 @@ function suggestByRules(text) {
   CouponUpsertSchema,
   CreateOrderSchema,
   CreateOrderWithCouponSchema,
+  CustomerHistoryRequestOtpSchema,
+  CustomerHistoryVerifyOtpSchema,
+  CustomerOrderHistoryItemSchema,
   CustomerSchema,
   DEPARTAMENTOS,
   EVENT_TYPES,

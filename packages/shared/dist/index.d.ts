@@ -1450,6 +1450,97 @@ declare const ContactSchema: z.ZodObject<{
 }>;
 type ContactInput = z.infer<typeof ContactSchema>;
 declare const MESSAGE_STATUSES: readonly ["new", "read", "answered"];
+declare const CustomerHistoryRequestOtpSchema: z.ZodObject<{
+    email: z.ZodString;
+}, "strip", z.ZodTypeAny, {
+    email: string;
+}, {
+    email: string;
+}>;
+type CustomerHistoryRequestOtp = z.infer<typeof CustomerHistoryRequestOtpSchema>;
+declare const CustomerHistoryVerifyOtpSchema: z.ZodObject<{
+    email: z.ZodString;
+    code: z.ZodString;
+}, "strip", z.ZodTypeAny, {
+    code: string;
+    email: string;
+}, {
+    code: string;
+    email: string;
+}>;
+type CustomerHistoryVerifyOtp = z.infer<typeof CustomerHistoryVerifyOtpSchema>;
+declare const CustomerOrderHistoryItemSchema: z.ZodObject<{
+    reference: z.ZodString;
+    status: z.ZodEnum<["pending", "paid", "preparing", "shipped", "delivered", "cancelled", "failed", "refunded"]>;
+    paymentMethod: z.ZodEnum<["wompi", "transfer", "cod"]>;
+    subtotal: z.ZodNumber;
+    shipping: z.ZodNumber;
+    discount: z.ZodDefault<z.ZodNumber>;
+    total: z.ZodNumber;
+    tracking: z.ZodNullable<z.ZodString>;
+    carrier: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+    city: z.ZodString;
+    department: z.ZodOptional<z.ZodNullable<z.ZodString>>;
+    eta: z.ZodDefault<z.ZodNullable<z.ZodString>>;
+    createdAt: z.ZodString;
+    items: z.ZodArray<z.ZodObject<{
+        name: z.ZodString;
+        unitPrice: z.ZodNumber;
+        quantity: z.ZodNumber;
+        productId: z.ZodOptional<z.ZodNullable<z.ZodNumber>>;
+    }, "strip", z.ZodTypeAny, {
+        name: string;
+        quantity: number;
+        unitPrice: number;
+        productId?: number | null | undefined;
+    }, {
+        name: string;
+        quantity: number;
+        unitPrice: number;
+        productId?: number | null | undefined;
+    }>, "many">;
+}, "strip", z.ZodTypeAny, {
+    status: "pending" | "paid" | "preparing" | "shipped" | "delivered" | "cancelled" | "failed" | "refunded";
+    shipping: number;
+    city: string;
+    items: {
+        name: string;
+        quantity: number;
+        unitPrice: number;
+        productId?: number | null | undefined;
+    }[];
+    paymentMethod: "wompi" | "transfer" | "cod";
+    reference: string;
+    total: number;
+    subtotal: number;
+    discount: number;
+    tracking: string | null;
+    eta: string | null;
+    createdAt: string;
+    department?: string | null | undefined;
+    carrier?: string | null | undefined;
+}, {
+    status: "pending" | "paid" | "preparing" | "shipped" | "delivered" | "cancelled" | "failed" | "refunded";
+    shipping: number;
+    city: string;
+    items: {
+        name: string;
+        quantity: number;
+        unitPrice: number;
+        productId?: number | null | undefined;
+    }[];
+    paymentMethod: "wompi" | "transfer" | "cod";
+    reference: string;
+    total: number;
+    subtotal: number;
+    tracking: string | null;
+    createdAt: string;
+    department?: string | null | undefined;
+    discount?: number | undefined;
+    eta?: string | null | undefined;
+    carrier?: string | null | undefined;
+}>;
+type CustomerOrderHistoryItem = z.infer<typeof CustomerOrderHistoryItemSchema>;
 
 /** Pesos colombianos sin decimales, formato local: $22.000 */
 declare const cop: (n: number | string | null | undefined) => string;
@@ -1471,4 +1562,4 @@ type PaymentMethod = (typeof PAYMENT_METHODS)[number];
 declare const STATUS_LABEL: Record<OrderStatus, string>;
 declare const METHOD_LABEL: Record<PaymentMethod, string>;
 
-export { ADMIN_ROLES, type AdminRole, AdminUserCreateSchema, AdminUserUpdateSchema, BatchCreateSchema, CITIES, type ContactInput, ContactSchema, type CouponUpsert, CouponUpsertSchema, type CreateOrderInput, CreateOrderSchema, type CreateOrderWithCoupon, CreateOrderWithCouponSchema, CustomerSchema, DEPARTAMENTOS, EVENT_TYPES, EventsBatchSchema, type FooterPillar, FooterPillarSchema, LoginSchema, MESSAGE_STATUSES, METHOD_LABEL, ORDER_STATUSES, OrderAdminUpdateSchema, type OrderCreated, OrderCreatedSchema, type OrderStatus, OrderUpdateSchema, PAYMENT_METHODS, type PairingItem, PairingItemSchema, type PaymentMethod, type ProcessStep, ProcessStepSchema, type Product, ProductSchema, type ProductUpsert, ProductUpsertSchema, type PublicOrder, PublicOrderSchema, type Quote, type QuoteRequest, QuoteRequestSchema, QuoteSchema, SETTING_KEYS, STATUS_LABEL, type SettingKey, SettingsSchema, type SiteContent, SiteContentSchema, StockAdjustSchema, type StoreInfo, StoreInfoSchema, SubscribeSchema, SuggestSchema, type Suggestion, SuggestionSchema, type Testimonial, TestimonialSchema, type TrustPillar, TrustPillarSchema, ZoneUpsertSchema, cop, departmentOf, searchCities, suggestByRules };
+export { ADMIN_ROLES, type AdminRole, AdminUserCreateSchema, AdminUserUpdateSchema, BatchCreateSchema, CITIES, type ContactInput, ContactSchema, type CouponUpsert, CouponUpsertSchema, type CreateOrderInput, CreateOrderSchema, type CreateOrderWithCoupon, CreateOrderWithCouponSchema, type CustomerHistoryRequestOtp, CustomerHistoryRequestOtpSchema, type CustomerHistoryVerifyOtp, CustomerHistoryVerifyOtpSchema, type CustomerOrderHistoryItem, CustomerOrderHistoryItemSchema, CustomerSchema, DEPARTAMENTOS, EVENT_TYPES, EventsBatchSchema, type FooterPillar, FooterPillarSchema, LoginSchema, MESSAGE_STATUSES, METHOD_LABEL, ORDER_STATUSES, OrderAdminUpdateSchema, type OrderCreated, OrderCreatedSchema, type OrderStatus, OrderUpdateSchema, PAYMENT_METHODS, type PairingItem, PairingItemSchema, type PaymentMethod, type ProcessStep, ProcessStepSchema, type Product, ProductSchema, type ProductUpsert, ProductUpsertSchema, type PublicOrder, PublicOrderSchema, type Quote, type QuoteRequest, QuoteRequestSchema, QuoteSchema, SETTING_KEYS, STATUS_LABEL, type SettingKey, SettingsSchema, type SiteContent, SiteContentSchema, StockAdjustSchema, type StoreInfo, StoreInfoSchema, SubscribeSchema, SuggestSchema, type Suggestion, SuggestionSchema, type Testimonial, TestimonialSchema, type TrustPillar, TrustPillarSchema, ZoneUpsertSchema, cop, departmentOf, searchCities, suggestByRules };

@@ -446,6 +446,34 @@ var ContactSchema = z.object({
   // campo trampa para bots: si trae algo, se ignora en silencio
 });
 var MESSAGE_STATUSES = ["new", "read", "answered"];
+var CustomerHistoryRequestOtpSchema = z.object({
+  email: z.string().trim().email("Escribe un correo electr\xF3nico v\xE1lido.").max(160)
+});
+var CustomerHistoryVerifyOtpSchema = z.object({
+  email: z.string().trim().email("Escribe un correo electr\xF3nico v\xE1lido.").max(160),
+  code: z.string().trim().length(6, "El c\xF3digo debe tener 6 d\xEDgitos.")
+});
+var CustomerOrderHistoryItemSchema = z.object({
+  reference: z.string(),
+  status: z.enum(ORDER_STATUSES),
+  paymentMethod: z.enum(PAYMENT_METHODS),
+  subtotal: z.number(),
+  shipping: z.number(),
+  discount: z.number().default(0),
+  total: z.number(),
+  tracking: z.string().nullable(),
+  carrier: z.string().nullable().optional(),
+  city: z.string(),
+  department: z.string().nullable().optional(),
+  eta: z.string().nullable().default(null),
+  createdAt: z.string(),
+  items: z.array(z.object({
+    name: z.string(),
+    unitPrice: z.number(),
+    quantity: z.number(),
+    productId: z.number().nullable().optional()
+  }))
+});
 
 // src/money.ts
 var cop = (n) => "$" + Number(n || 0).toLocaleString("es-CO");
@@ -550,6 +578,9 @@ export {
   CouponUpsertSchema,
   CreateOrderSchema,
   CreateOrderWithCouponSchema,
+  CustomerHistoryRequestOtpSchema,
+  CustomerHistoryVerifyOtpSchema,
+  CustomerOrderHistoryItemSchema,
   CustomerSchema,
   DEPARTAMENTOS,
   EVENT_TYPES,
