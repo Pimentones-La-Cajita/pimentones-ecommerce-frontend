@@ -1021,6 +1021,7 @@ declare const SiteContentSchema: z.ZodObject<{
     floatingChatEnabled: z.ZodDefault<z.ZodBoolean>;
     floatingChatTitle: z.ZodDefault<z.ZodString>;
     floatingChatText: z.ZodDefault<z.ZodString>;
+    floatingChatAvatar: z.ZodDefault<z.ZodString>;
     footerRibbonEnabled: z.ZodDefault<z.ZodBoolean>;
     footerPillars: z.ZodDefault<z.ZodArray<z.ZodObject<{
         id: z.ZodDefault<z.ZodString>;
@@ -1203,6 +1204,7 @@ declare const SiteContentSchema: z.ZodObject<{
     floatingChatEnabled: z.ZodDefault<z.ZodBoolean>;
     floatingChatTitle: z.ZodDefault<z.ZodString>;
     floatingChatText: z.ZodDefault<z.ZodString>;
+    floatingChatAvatar: z.ZodDefault<z.ZodString>;
     footerRibbonEnabled: z.ZodDefault<z.ZodBoolean>;
     footerPillars: z.ZodDefault<z.ZodArray<z.ZodObject<{
         id: z.ZodDefault<z.ZodString>;
@@ -1385,6 +1387,7 @@ declare const SiteContentSchema: z.ZodObject<{
     floatingChatEnabled: z.ZodDefault<z.ZodBoolean>;
     floatingChatTitle: z.ZodDefault<z.ZodString>;
     floatingChatText: z.ZodDefault<z.ZodString>;
+    floatingChatAvatar: z.ZodDefault<z.ZodString>;
     footerRibbonEnabled: z.ZodDefault<z.ZodBoolean>;
     footerPillars: z.ZodDefault<z.ZodArray<z.ZodObject<{
         id: z.ZodDefault<z.ZodString>;

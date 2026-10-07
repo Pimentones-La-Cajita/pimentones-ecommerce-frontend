@@ -476,10 +476,11 @@ var SiteContentSchema = import_zod.z.object({
   floatingChatEnabled: import_zod.z.boolean().default(true),
   floatingChatTitle: import_zod.z.string().max(100).default("\xBFDudas con tus sabores o env\xEDos?"),
   floatingChatText: import_zod.z.string().max(200).default("Chatea directo con nuestro taller en Bogot\xE1."),
+  floatingChatAvatar: import_zod.z.string().max(300).default("/img/isotipo.svg"),
   // 15. Garantías del Pie de Página (Ribbon)
   footerRibbonEnabled: import_zod.z.boolean().default(true),
   footerPillars: import_zod.z.array(FooterPillarSchema).default([
-    { id: "fp-1", icon: "\u{1F336}\uFE0F", title: "Cosecha Seleccionada", desc: "Pimentones maduros asados y confitados a fuego lento en Bogot\xE1.", active: true },
+    { id: "fp-1", icon: "\u{1FAD1}", title: "Cosecha Seleccionada", desc: "Pimentones maduros asados y confitados a fuego lento en Bogot\xE1.", active: true },
     { id: "fp-2", icon: "\u{1F33F}", title: "100% Libre de Qu\xEDmicos", desc: "Sin conservantes artificiales, espesantes ni colorantes a\xF1adidos.", active: true },
     { id: "fp-3", icon: "\u{1F4E6}", title: "Env\xEDos a Toda Colombia", desc: "Embalaje antigolpes con sello t\xE9rmico. Gratis desde $90.000.", active: true },
     { id: "fp-4", icon: "\u{1F512}", title: "Compra Segura & PSE", desc: "Transacciones cifradas con Wompi, Bancolombia, Nequi y tarjetas.", active: true }
